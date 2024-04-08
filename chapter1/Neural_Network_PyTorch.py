@@ -84,4 +84,4 @@ for epoch in range(epoches):
     loss.backward()
 
     optimizer.step()
-  print("epoch : ", epoch, " loss = ", (total_loss/num).item())
+  print("epoch : ", epoch+1, " loss = ", (total_loss/num).item())
