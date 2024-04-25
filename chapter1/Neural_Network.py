@@ -33,7 +33,7 @@ class Neural_Network:
             continue  #skip input lawyer
 
         w_tensor = torch.tensor(self.weights[layer_i - SKIP_INPUT_LAYER])
-        x_tensor = ((torch.tensor(next_x)).reshape(1,len(next_x))).t()
+        x_tensor = ((torch.tensor(next_x)).reshape(len(next_x),1))
         b_tensor = torch.tensor(self.biases[layer_i - SKIP_INPUT_LAYER]).reshape(1,len(self.biases[layer_i - SKIP_INPUT_LAYER]))
         node_sum_tensor = (torch.mm(w_tensor.float(),x_tensor.float()).t()+b_tensor.float())
         if layer_i < len(layers)-1: #except output layer
