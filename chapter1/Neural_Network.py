@@ -13,8 +13,14 @@ class Neural_Network:
     self.biases = []
     np.random.seed(init_seed)  # 乱数生成器にシードを設定
     for i in range(1, self.num_layers):
-      self.weights.append(np.random.rand(self.layers[i], self.layers[i-1]))
-      self.biases.append(np.random.rand(self.layers[i]))
+      w_layer = []
+      b_layer = []
+      for j in range(int(self.layers[i])):
+        b_layer.append(0.0)
+        w_node = [random.gauss(0.0, (2.0/self.layers[i-1])**0.5) for _ in range(int(self.layers[i-1]))] #He初期化
+        w_layer.append(w_node)
+      self.weights.append(w_layer)
+      self.biases.append(b_layer)
 
   def ReLU(self, x):
     return x * (x > 0)
