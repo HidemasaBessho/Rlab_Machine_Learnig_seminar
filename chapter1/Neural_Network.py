@@ -60,6 +60,43 @@ class Neural_Network:
   def MSE_loss(self, y_pred, y_true):
     return 0.5*(y_pred-y_true)**2
 
+  def update_params(self,grads_w, grads_b,lr):
+    # ネットワーク全体で勾配を保持するためのリスト
+    new_weights = [] # 重み
+    new_biases = [] # バイアス
+
+    SKIP_INPUT_LAYER = 1
+    for layer_i, layer in enumerate(layers):  # 各層を処理
+        if layer_i == 0:
+            continue  # 入力層はスキップ
+
+        # 層ごとで勾配を保持するためのリスト
+        layer_w = []
+        layer_b = []
+        layer_m_b = []
+        layer_v_b = []
+        layer_m_w = []
+        layer_v_w = []
+
+        for node_i in range(layer):  # 層の中の各ノードを処理
+            b = self.biases[layer_i - SKIP_INPUT_LAYER][node_i]
+            grad_b = grads_b[layer_i - SKIP_INPUT_LAYER][node_i]
+            b = b - lr*grad_b
+            layer_b.append(b)
+
+            node_weights = self.weights[layer_i - SKIP_INPUT_LAYER][node_i]
+            node_w = []
+            for each_w_i, w in enumerate(node_weights):
+                grad_w = grads_w[layer_i - SKIP_INPUT_LAYER][node_i][each_w_i]
+                w = w - lr*grad_w
+                node_w.append(w)
+            layer_w.append(node_w)
+
+        new_weights.append(layer_w)
+        new_biases.append(layer_b)
+
+    return new_weights, new_biases
+
 # Boston Housing Datasetを取得
 boston = fetch_openml(name='boston')
 
