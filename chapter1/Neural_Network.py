@@ -73,10 +73,6 @@ class Neural_Network:
         # 層ごとで勾配を保持するためのリスト
         layer_w = []
         layer_b = []
-        layer_m_b = []
-        layer_v_b = []
-        layer_m_w = []
-        layer_v_w = []
 
         for node_i in range(layer):  # 層の中の各ノードを処理
             b = self.biases[layer_i - SKIP_INPUT_LAYER][node_i]
