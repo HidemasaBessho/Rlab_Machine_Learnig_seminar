@@ -11,6 +11,7 @@ class Neural_Network:
     self.num_layers = len(layers)
     self.weights = []
     self.biases = []
+    random.seed(init_seed)
     np.random.seed(init_seed)  # 乱数生成器にシードを設定
     for i in range(1, self.num_layers):
       w_layer = []
