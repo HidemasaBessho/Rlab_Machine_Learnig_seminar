@@ -115,7 +115,6 @@ class Neural_Network:
             if is_output_layer:
                 active_der = self.identity_der(node_sum)
             else:
-                layer_poly_threshold = self.poly_threshold[layer_i-SKIP_INPUT_LAYER][node_i]
                 active_der = self.ReLU_der(node_sum)
             w = self.weights[layer_i - SKIP_INPUT_LAYER][node_i]
             b = self.biases[layer_i - SKIP_INPUT_LAYER][node_i]
