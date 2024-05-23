@@ -24,7 +24,13 @@ class Neural_Network:
       self.biases.append(b_layer)
 
   def ReLU(self, x):
-    return x * (x > 0)
+    node_out = []
+    for i in range(len(x[0])):
+      if x[0, i] > 0.0:
+        node_out.append(x[0, i])
+      else:
+        node_out.append(0.0)
+    return torch.tensor(node_out).reshape(1, len(x[0]))
 
   def forward_prop(self, x, cache_mode=False):
     cached_sums = []  # 記録した全ノードの線形和（Σ）の値
@@ -60,6 +66,88 @@ class Neural_Network:
 
   def MSE_loss(self, y_pred, y_true):
     return 0.5*(y_pred-y_true)**2
+
+  def MSE_loss_der(self, y_pred, y_true):
+    return y_pred - y_true
+
+  def identity_der(self, x):
+    return 1.0
+
+  def ReLU_der(self, x):
+    return 0.0 if x < 0.0 else 1.0
+
+  def sum_der(self, x, weights, bias, with_respect_to='w'):
+    # ※1データ分、つまりxとweightsは「一次元リスト」という前提。
+    if with_respect_to == 'w':
+        return x  # 線形和uを各重みw_iで偏微分するとx_iになる（iはノード番号）
+    elif with_respect_to == 'b':
+        return 1.0  # 線形和uをバイアスbで偏微分すると1になる
+    elif with_respect_to == 'x':
+        return weights  # 線形和uを各入力x_iで偏微分するとw_iになる
+
+  def back_prop(self, y_true, cached_outs, cached_sums):
+    grads_w =[]  # 重みの勾配
+    grads_b = []  # バイアスの勾配
+    grads_x = []  # 入力の勾配
+
+    layer_count = len(layers)
+    layer_max_i = layer_count-1
+    SKIP_INPUT_LAYER = 1
+    PREV_LAYER = 1
+    rng = range(SKIP_INPUT_LAYER, layer_count)
+    for layer_i in reversed(rng):
+        is_output_layer = (layer_i == layer_max_i)
+        layer_grads_w = []
+        layer_grads_b = []
+        layer_grads_x = [] #layerごとのgrad
+
+        if is_output_layer:
+            back_error = []
+            y_pred = cached_outs[layer_i]
+            for output, target in zip(y_pred, y_true):
+                loss_der = self.MSE_loss_der(output, target)
+                back_error.append(loss_der)
+        else:
+            back_error = grads_x[-1]
+
+        node_sums = cached_sums[layer_i - SKIP_INPUT_LAYER]
+        for node_i, node_sum in enumerate(node_sums):
+            if is_output_layer:
+                active_der = self.identity_der(node_sum)
+            else:
+                layer_poly_threshold = self.poly_threshold[layer_i-SKIP_INPUT_LAYER][node_i]
+                active_der = self.ReLU_der(node_sum)
+            w = self.weights[layer_i - SKIP_INPUT_LAYER][node_i]
+            b = self.biases[layer_i - SKIP_INPUT_LAYER][node_i]
+            x = cached_outs[layer_i - PREV_LAYER]
+            sum_der_w = self.sum_der(x, w, b, with_respect_to='w')
+            sum_der_b = self.sum_der(x, w, b, with_respect_to='b')
+            sum_der_x = self.sum_der(x, w, b, with_respect_to='x')
+
+            delta = back_error[node_i] * active_der
+
+            grad_b = delta * sum_der_b
+            layer_grads_b.append(grad_b)
+
+            node_grads_w = []
+            for x_i, (each_dw, each_dx) in enumerate(zip(sum_der_w, sum_der_x)):
+                grad_w = delta * each_dw
+                node_grads_w.append(grad_w)
+
+                grad_x = delta * each_dx
+                if node_i == 0:
+                    layer_grads_x.append(grad_x)
+                else:
+                    layer_grads_x[x_i] += grad_x
+            layer_grads_w.append(node_grads_w)
+
+        grads_w.append(layer_grads_w)
+        grads_b.append(layer_grads_b)
+        grads_x.append(layer_grads_x)
+
+    grads_w.reverse()
+    grads_b.reverse()
+    return grads_w, grads_b
 
   def update_params(self,grads_w, grads_b,lr):
     # ネットワーク全体で勾配を保持するためのリスト
