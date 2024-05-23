@@ -181,6 +181,63 @@ class Neural_Network:
 
     return new_weights, new_biases
 
+  def train(self, x, y, epochs, lr, train_seed):
+    losses = []
+    epoches = []
+    data = list(zip(x, y))  # xとyをペアにしてリスト化
+    out_count = 1.0
+    out_num = 10
+    for epoch in range(1, epochs+1):
+        total_loss = 0.0
+        if epoch != 0:
+            random.shuffle(data)  # データをランダムにシャッフル
+        np.random.seed(train_seed)
+        for input, target in data:
+
+            # 順伝播
+            y_pred, outs, sums = self.forward_prop(input, True)
+
+            # 誤差計算
+            #for output, ground_truth in zip(y_pred, target):
+                #loss = self.sseloss(output, ground_truth)
+                #total_loss += loss
+
+                # 誤差逆伝播
+                grads_w, grads_b = self.back_prop(target, outs, sums)
+
+                # パラメータ更新
+                new_w, new_b = self.update_params(grads_w, grads_b, lr)
+
+                # 更新したパラメータを反映
+                self.weights = new_w
+                self.biases = new_b
+
+            for input, target in data:
+
+                # 順伝播
+                y_pred, outs, sums = self.forward_prop(input, True)
+
+                # 誤差計算
+                for output, ground_truth in zip(y_pred, target):
+                  loss = self.sseloss(output, ground_truth)
+                  total_loss += loss
+
+            # エポックごとに平均誤差を表示
+            avg_loss = total_loss / len(x) /50.0
+            losses.append(avg_loss)
+            epoches.append(epoch)
+
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.plot(losses)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Training Loss Over Time')
+        plt.xlim(1,1.e+4)
+        plt.ylim(1.e+0, 3.e+5)
+        plt.show()
+    
+
 # Boston Housing Datasetを取得
 boston = fetch_openml(name='boston')
 
