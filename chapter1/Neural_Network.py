@@ -90,7 +90,7 @@ class Neural_Network:
     grads_b = []  # バイアスの勾配
     grads_x = []  # 入力の勾配
 
-    layer_count = len(layers)
+    layer_count = len(self.layers)
     layer_max_i = layer_count-1
     SKIP_INPUT_LAYER = 1
     PREV_LAYER = 1
