@@ -17,23 +17,23 @@ class Dataset(torch.nn.Module):
 
         print("max_files_to_load = ", max_files_to_load)        
 
-        filenames = sorted(glob.glob(file_pattern), key=self.natural_keys)
+        filenames = sorted(glob.glob(file_pattern), key=self.natural_keys) #ソートする
         if max_files_to_load: filenames = filenames[:max_files_to_load]
 
         self.filenames = filenames    
         self.edge_threshold = edge_threshold
         self.num_nodes = n_particles        # number of particles: fixed
         self.phi = 1.2                      # number density of the system
-        self.box = np.full(3, (float(self.num_nodes) / self.phi )**(1.0/3.0) ) # length of simulation box
+        self.box = np.full(3, (float(self.num_nodes) / self.phi )**(1.0/3.0) ) # length of simulation box, shapeが[1,3]のndarray
 
-        self.data = []
-        self.init_positions_data = []
+        self.data = [] #inputするグラフデータを保持する
+        self.init_positions_data = [] #初期配置を保持する
 
         for filename in self.filenames:
             print("loading: ", filename)
 
-            npz = np.load(filename)  
-            types = npz['types']
+            npz = np.load(filename) #npz : ndarrayを名前付きで保存することができる
+            types = npz['types'] # 'types'という名前がつけられて保存されたadarrayを、typesという名前で取り出す
             initial_positions = npz['initial_positions']
             positions = npz['positions']
         
@@ -52,10 +52,8 @@ class Dataset(torch.nn.Module):
 
             self.init_positions_data.append(initial_positions)
             self.data.append(graph)
-            
 
-
-        
+    
     def atoi(self, text):
         return int(text) if text.isdigit() else text
 
@@ -65,16 +63,13 @@ class Dataset(torch.nn.Module):
     def __len__(self):
         return len( self.filenames )
 
-
     def get_init_positions(self, idx):
         return self.init_positions_data[idx]
-    
     
     def __getitem__(self, idx):
         graph = self.data[idx]
         graph = self.apply_random_rotation(graph)
         return graph
-
 
     def get_targets_node(self, initial_positions, trajectory_target_positions, types, if_train=True):
         """Returns the averaged particle mobilities from the sampled trajectories.  
@@ -87,7 +82,6 @@ class Dataset(torch.nn.Module):
             mask = (types == 0).astype(bool)
         
         return targets.astype(np.float32), mask
-
 
     def get_targets_edge(self,
                          initial_positions,
