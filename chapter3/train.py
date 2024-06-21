@@ -32,13 +32,13 @@ def train_model(p_frac,
                        max_files_to_load,
                        n_particles,
                        edge_threshold=2.0
-                       )
+                       ) #訓練データを読み込む -> load_data.py
     
     testset = Dataset(test_file_pattern,
                       max_files_to_load,
                       n_particles, 
                       edge_threshold=2.0,                      
-                      if_train=False)
+                      if_train=False) #テストデータを読み込む
 
     train_batch_size = 1 if (p_frac > 1.0 - 1e-6) else 1
     
