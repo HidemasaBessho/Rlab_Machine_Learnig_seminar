@@ -41,8 +41,8 @@ class Dataset(torch.nn.Module):
 
             target_n, mask_n = self.get_targets_node(initial_positions, positions, types, if_train)
 
-            target_n = torch.tensor( target_n[:, None], dtype=torch.float )
-            mask_n = torch.tensor( mask_n[:, None], dtype=torch.bool )
+            target_n = torch.tensor(target_n[:, None], dtype=torch.float)
+            mask_n = torch.tensor(mask_n[:, None], dtype=torch.bool)
           
             graph = torch_geometric.data.Data(x=node_feature,
                                               edge_index=edge_index,
@@ -77,9 +77,9 @@ class Dataset(torch.nn.Module):
         targets = np.mean([ np.linalg.norm(t - initial_positions, axis=-1)
                             for t in trajectory_target_positions], axis=0) #ノルムを計算し，平均値をとっている? アイソコンフィギュレーションだけ？ list内包表記
 
-        mask = np.ones( len(targets), dtype=bool )
-        if ( if_train == False):
-            mask = (types == 0).astype(bool)
+        mask = np.ones(len(targets), dtype=bool) #長さがlen(targets)で, 全ての要素がTrueであるブール型の配列
+        if (if_train == False):
+            mask = (types == 0).astype(bool) #if_trainがFalseの時, つまりvalidationの時, typesの値が0の要素に対応する位置がTrue, それ以外の位置がFalse
         
         return targets.astype(np.float32), mask
 
