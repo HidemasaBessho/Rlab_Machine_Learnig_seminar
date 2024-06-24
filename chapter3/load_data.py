@@ -136,11 +136,11 @@ class Dataset(torch.nn.Module):
         cross_positions -= (cross_positions > box_ / 2.).astype(np.float32) * box_
                                                                            
         distances = np.linalg.norm(cross_positions, axis=-1)
-        indices = np.where( (distances < self.edge_threshold) & (distances > 1e-6) )
+        indices = np.where((distances < self.edge_threshold) & (distances > 1e-6)) #条件を満たすインデックスのみを取り出す
 
-        node_feature = torch.tensor( types[:,None], dtype=torch.float )              
-        edge_index = torch.tensor( np.array(indices), dtype=torch.long )        
-        edge_feature = torch.tensor( cross_positions[indices], dtype=torch.float )
+        node_feature = torch.tensor(types[:,None], dtype=torch.float) #node_featureの形状はノード数×ノードの特徴量の種類数, [num_nodes, num_node_features]
+        edge_index = torch.tensor(np.array(indices), dtype=torch.long) #edge_indexの形状は2×エッジの数, [2, num_edge]
+        edge_feature = torch.tensor(cross_positions[indices], dtype=torch.float) #edge_indexに該当するcross_positionsのみを取り出す
         
         return node_feature, edge_index, edge_feature
 
