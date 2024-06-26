@@ -44,7 +44,7 @@ class EdgeUpdate(torch.nn.Module):
 
     def __init__(self, mlp_size):
         super().__init__()
-        self.mlp = MLP(4*mlp_size, mlp_size) 
+        self.mlp = MLP(4*mlp_size, mlp_size) # 4 : src(送信側のx) + dest(受信側のx) + edge_attr + encoded_edge
         
     def forward(self, src, dest, edge_attr, encoded_edge, batch):        
         edge_input = torch.cat([src, dest, edge_attr, encoded_edge], dim=1) #inputした引数をひとまとめにする
@@ -57,11 +57,18 @@ class NodeUpdate(torch.nn.Module):
     def __init__(self, mlp_size):
         
         super().__init__()
-        self.mlp = MLP(3*mlp_size, mlp_size)
+        self.mlp = MLP(3*mlp_size, mlp_size) # 3 : x + edge_attr + encoded_x
 
     def forward(self, x, edge_index, edge_attr, encoded_x, batch):
-        row, col = edge_index
+        row, col = edge_index #row : 送信　　/ col : 受信
         recv = scatter(edge_attr, col, dim=0, dim_size=x.size(0))
+        #scatter関数 : PyTorchのtorch_scatterライブラリに含まれている関数，スパースデータを効率的に集約．(和，平均値，最大値など)
+        #例 : torch_scatter.scatter(src, index, dim=-1, out=None, dim_size=None, reduce='sum')
+        #src: 入力テンソル．集約したいデータが含まれているテンソル． / edge_attr
+        #index : インデックステンソル．srcの各要素がどの位置に集約されるかを示す． / col(受信)
+        #dim : 集約を行う次元．デフォルトは-1（最後の次元）． / dim=0 : ノードの次元
+        #dim_size : 集約結果の次元サイズ．指定しない場合，indexの最大値+1． / dim_size=x.size(0) : ノードの次元
+        #reduce : 集約の方法．'sum'（和），'mean'（平均），'max'（最大値）など． / 指定されていない場合，デフォルトではsum
         out = torch.cat([x, encoded_x, recv], dim=1) 
         out = self.mlp(out)
 
