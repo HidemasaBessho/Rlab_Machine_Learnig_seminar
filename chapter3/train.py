@@ -45,7 +45,7 @@ def train_model(p_frac,
     train_data_loader = torch_geometric.loader.DataLoader(trainset, batch_size=train_batch_size, shuffle=True)
     test_data_loader = torch_geometric.loader.DataLoader(testset, batch_size=1, shuffle=False)
     
-    model = Model().to(device)
+    model = Model().to(device) #Modelクラスを呼び出し，device(gpu)へ転送
     
     loss_fn = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps=1e-8)
@@ -54,10 +54,10 @@ def train_model(p_frac,
 
         train_losses = []        
         for data in train_data_loader:        
-            data = data.to(device) 
+            data = data.to(device) #data(inputするグラフ)をdevice(gpu)へ転送
             optimizer.zero_grad()                        
-            params_node = model(data)
-            loss_node = loss_fn(params_node, data.y)
+            params_node = model(data) #modelにdataをinput -> propensityがreturnされる
+            loss_node = loss_fn(params_node, data.y) #nodeのloss, data.yにはground truth(MD)のpropenstiyが入っている
             loss = loss_node
             loss.backward()
 
@@ -65,7 +65,7 @@ def train_model(p_frac,
                 torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip) #勾配爆発防止
 
             optimizer.step()
-            train_losses.append( loss.item() )
+            train_losses.append(loss.item())
             
 
         if epoch%5==0 and test_data_loader is not None:    
