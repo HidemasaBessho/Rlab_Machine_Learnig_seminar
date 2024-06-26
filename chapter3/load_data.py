@@ -82,50 +82,6 @@ class Dataset(torch.nn.Module):
             mask = (types == 0).astype(bool) #if_trainがFalseの時, つまりvalidationの時, typesの値が0の要素に対応する位置がTrue, それ以外の位置がFalse
         
         return targets.astype(np.float32), mask
-
-    def get_targets_edge(self,
-                         initial_positions,
-                         trajectory_target_positions,
-                         types, 
-                         if_train=True):
-
-        cross_positions = initial_positions[None, :, :] - initial_positions[:, None, :]
-
-        box_ = self.box[None, None, :]
-        mod = np.floor( cross_positions / box_ )
-        cross_positions -= mod*box_
-        cross_positions -= (cross_positions > box_ / 2.).astype(np.float32) * box_
-        
-
-        distances = np.linalg.norm(cross_positions, axis=-1)
-        indices = np.where( (distances < self.edge_threshold) & (distances > 1e-6) )
-
-        edges = cross_positions[indices]
-        edge_distances =  np.linalg.norm( edges, axis=1)
-
-        cross_types = types[None, :]  + types[:, None]
-        cross_types = cross_types[indices]
-       
-        mask = np.ones( len(edges), dtype=bool )
-        if ( if_train == False):
-            mask = (cross_types == 0).astype(bool) *  (edge_distances < 1.35).astype(bool)
-       
-        targets = [0.0] * len(edges)
-
-        for t in trajectory_target_positions:
-            t_cross_positions = t[ indices[1], :] - t[ indices[0], :]
-            box__ = self.box[None, :]
-
-            t_mod = np.floor( t_cross_positions / box__ )
-            t_cross_positions -= t_mod*box__
-            t_cross_positions -= (t_cross_positions > box__ / 2.).astype(np.float32) * box__
-            t_distances = np.linalg.norm(t_cross_positions, axis=-1)            
-            
-            t_edge_disp = t_distances - edge_distances 
-            targets += t_edge_disp / len(trajectory_target_positions)
-
-        
-        return targets.astype(np.float32), mask
     
     def make_graph_from_static_structure(self, positions, types):
 
