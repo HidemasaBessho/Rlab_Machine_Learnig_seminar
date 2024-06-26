@@ -90,17 +90,15 @@ def train_model(p_frac,
                 valid_stats_node.append(np.corrcoef(prediction_node[mask_node == True],target_node[mask_node == True])[0, 1] )
               
                 if (cnt==0 and epoch%500 == 0):
-                    fn = "./result/T" + '{:.2f}'.format(temperature) + "/T" + '{:.2f}'.format(temperature) + "_" + str(cnt) + "_tc" + str(tcl) \
-                        + "_pred_n_" + str(epoch) + "_" + str(seed+1) + ".dat"
+                    fn = "./result/T{:.2f}/T{:.2f}_{:d}_tc{:d}_pred_n_{:d}_{:d}.dat".format(temperature,temperature,cnt,tcl,epoch,seed+1)
                     prediction_output(testset, prediction_node[0:4096], target_node[0:4096],  fn)
                 cnt = cnt + 1
 
-            fm = "./loss/T" + '{:.2f}'.format(temperature) + "/loss_frac" + '{:.2f}'.format(p_frac)   + "_T" + '{:.2f}'.format(temperature) \
-                 + "_tc" + str(tcl) + "_" + str(seed+1) + ".dat"
+            fm = "./loss/T{:.2f}/loss_frac{:.2f}_T{:.2f}_tc{:d}_{:d}.dat".format(temperature,p_frac,temperature,tcl,seed+1)
             with open(fm, 'a') as f:
                 f.write( str(epoch) + "," + str(np.mean(train_losses)) + "," + str( np.mean(valid_losses)) + "," + str(np.mean(valid_stats_node)) + "\n")
 
-    torch.save(model.state_dict(),'./save_train_model/model_weight/T' + '{:.2f}'.format(temperature) + '/model_weight'+"_T"+ '{:.2f}'.format(temperature) + "_tc" + str(tcl)+'.pth')
+    torch.save(model.state_dict(),'./save_train_model/model_weight/T{:.2f}/model_weight_T{:.2f}_tc{:d}.pth'.format(temperature,temperature,tcl))
 
 
 def prediction_output(testset, predictions, targets, filename):
