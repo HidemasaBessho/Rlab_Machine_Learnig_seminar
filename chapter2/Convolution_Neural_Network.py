@@ -58,8 +58,15 @@ val_loader = torch.utils.data.DataLoader(val, batch_size)
 test_loader = torch.utils.data.DataLoader(test, batch_size)
 
 # cuDNN に対する再現性の確保
+
 torch.backends.cudnn.deterministic = True
+# CuDNNは内部で非決定的なアルゴリズム（例えば，畳み込みやプーリングの操作）を使用することがある．これにより，同じ入力データを使用しても，異なる実行結果が得られる場合がある．
+# torch.backends.cudnn.deterministic = Trueと設定することで，CuDNNは決定的なアルゴリズムを使用し，再現性を確保する．
+
 torch.backends.cudnn.benchmark = False
+# CuDNNは、与えられた入力サイズやレイヤー構造に最適なアルゴリズムを選択するために，ベンチマークを実行することがある．
+# このベンチマークは初回実行時に行われ，その後は最適なアルゴリズムが使用される．
+# ベンチマークを無効にし、事前定義されたアルゴリズムを使用する．
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model = Net().to(device)
