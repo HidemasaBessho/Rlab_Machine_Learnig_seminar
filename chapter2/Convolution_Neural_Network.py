@@ -22,7 +22,7 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.conv(x) #畳み込み処理
         x = F.max_pool2d(x, 2, 2) #プーリング処理
-        x = x.view(x.size(0), -1) #tensor -> vectorの処理
+        x = x.view(-1, x.size(0)) #tensor -> vectorの処理
         x = F.relu(self.fc1(x)) #
         x = self.fc2(x)
         return x
