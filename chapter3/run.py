@@ -18,7 +18,7 @@ def main():
     test_file_pattern = os.path.join(directory_pattern, test_file_pattern)
 
     train.train_model(
-        p_frac=0.4, 
+        p_frac=1.0, 
         temperature=temperature,
         train_file_pattern=train_file_pattern,
         test_file_pattern=test_file_pattern,
