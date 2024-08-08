@@ -37,7 +37,7 @@ class Model(torch.nn.Module):
                                     encoded_edge_attr,
                                     batch) #Iterative_Layersのforwardをやっている
                 
-        return self.decoder(x)
+        return self.decoder(x), self.decoder(edge_attr)
         
     
 class EdgeUpdate(torch.nn.Module):
