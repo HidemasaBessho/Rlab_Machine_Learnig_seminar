@@ -56,10 +56,9 @@ def train_model(p_frac,
         for data in train_data_loader:        
             data = data.to(device) #data(inputするグラフ)をdevice(gpu)へ転送
             optimizer.zero_grad()                        
-            params_node, params_edge = model(data) #modelにdataをinput -> propensityがreturnされる
+            params_node = model(data) #modelにdataをinput -> propensityがreturnされる
             loss_node = loss_fn(params_node, data.y) #nodeのloss, data.yにはground truth(MD)のpropenstiyが入っている
-            loss_edge = loss_fn(params_edge, data.y_edge)
-            loss = p_frac * loss_node + (1.0-p_frac) * loss_edge
+            loss = loss_node
             loss.backward()
 
             if grad_clip != float('inf'):
@@ -73,28 +72,22 @@ def train_model(p_frac,
 
             valid_losses = []
             valid_stats_node = []
-            valid_stats_edge = []
 
             cnt = 0
             for data in test_data_loader:
 
                 data = data.to(device)                
-                prediction_node, prediction_edge = model(data)
+                prediction_node = model(data)
                 loss_node = loss_fn(prediction_node, data.y)
-                loss_edge = loss_fn(prediction_edge, data.y_edge)
-                loss = p_frac * loss_node + (1.0-p_frac) * loss_edge
+                loss = loss_node
                 loss_value = loss.item()            
                 valid_losses.append(loss_value)
 
                 prediction_node = torch.squeeze(prediction_node).to('cpu').detach().numpy().copy()
                 target_node = torch.squeeze(data.y).to('cpu').detach().numpy().copy()
-                prediction_edge = torch.squeeze(prediction_edge).to('cpu').detach().numpy().copy()
-                target_edge = torch.squeeze(data.y_edge).to('cpu').detach().numpy().copy()
                 mask_node = torch.squeeze(data.mask).to('cpu').detach().numpy().copy()
-                mask_edge = torch.squeeze(data.mask_edge).to('cpu').detach().numpy().copy()
 
                 valid_stats_node.append(np.corrcoef(prediction_node[mask_node == True],target_node[mask_node == True])[0, 1] )
-                valid_stats_edge.append(np.corrcoef(prediction_edge[mask_edge == True],target_edge[mask_edge == True])[0, 1] )
               
                 if (cnt==0 and epoch%500 == 0):
                     fn = "./result/T{:.2f}/T{:.2f}_{:d}_tc{:d}_pred_n_{:d}_{:d}.dat".format(temperature,temperature,cnt,tcl,epoch,seed+1)
